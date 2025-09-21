@@ -2,7 +2,7 @@
 
 import os
 from typing import List, Optional
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -89,31 +89,36 @@ class Settings(BaseSettings):
     aws_secret_access_key: Optional[str] = Field(default=None, description="AWS secret key")
     aws_region: Optional[str] = Field(default=None, description="AWS region")
     
-    @validator('allowed_domains', pre=True)
+    @field_validator('allowed_domains', mode='before')
+    @classmethod
     def parse_allowed_domains(cls, v):
         """Parse comma-separated domains string"""
         if isinstance(v, str):
             return [domain.strip() for domain in v.split(',')]
         return v
     
-    @validator('restricted_actions', pre=True)
+    @field_validator('restricted_actions', mode='before')
+    @classmethod
     def parse_restricted_actions(cls, v):
         """Parse comma-separated actions string"""
         if isinstance(v, str):
             return [action.strip() for action in v.split(',')]
         return v
     
-    @validator('cors_origins', pre=True)
+    @field_validator('cors_origins', mode='before')
+    @classmethod
     def parse_cors_origins(cls, v):
         """Parse comma-separated CORS origins"""
         if isinstance(v, str) and v != "*":
             return [origin.strip() for origin in v.split(',')]
         return v
     
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    model_config = {
+        "env_file": None,  # Temporarily disable .env file
+        "env_file_encoding": "utf-8",
+        "case_sensitive": False,
+        "extra": "ignore"
+    }
 
 
 # Global settings instance
