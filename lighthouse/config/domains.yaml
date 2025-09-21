@@ -1,0 +1,72 @@
+# Domain allowlist configuration for Lighthouse.ai
+
+# Allowed domains for navigation
+allowed_domains:
+  - google.com
+  - amazon.com
+  - github.com
+  - wikipedia.org
+  - example.com
+  - httpbin.org  # For testing
+
+# Restricted actions that require confirmation
+restricted_actions:
+  - delete
+  - purchase
+  - payment
+  - account_change
+  - logout
+  - unsubscribe
+  - cancel_subscription
+
+# Domain-specific configurations
+domain_configs:
+  google.com:
+    allowed_subdomains:
+      - www.google.com
+      - mail.google.com
+      - drive.google.com
+      - docs.google.com
+    restricted_paths:
+      - /accounts/delete
+      - /billing
+  
+  amazon.com:
+    allowed_subdomains:
+      - www.amazon.com
+      - smile.amazon.com
+    restricted_paths:
+      - /gp/your-account/delete
+      - /gp/buy/checkout
+      - /gp/cart/checkout
+  
+  github.com:
+    allowed_subdomains:
+      - www.github.com
+      - github.com
+    restricted_paths:
+      - /settings/admin
+      - /settings/billing
+
+# Safety rules
+safety_rules:
+  # Always require confirmation for these actions
+  confirmation_required:
+    - "delete"
+    - "purchase"
+    - "payment"
+    - "logout"
+    - "unsubscribe"
+  
+  # Actions that should be blocked entirely
+  blocked_actions:
+    - "format_disk"
+    - "system_shutdown"
+    - "admin_access"
+  
+  # Timeout settings for different action types
+  timeouts:
+    navigation: 10
+    form_submission: 30
+    file_download: 60
+    page_load: 15
