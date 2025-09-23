@@ -92,14 +92,29 @@ class BrowserAutomation(LoggerMixin):
             options.add_argument("--disable-gpu")
             options.add_argument("--disable-extensions")
             options.add_argument("--disable-plugins")
-            options.add_argument("--disable-images" if self.config.disable_images else "")
+            if self.config.disable_images:
+                options.add_argument("--disable-images")
             
             # Enable CDP
             options.add_argument("--enable-logging")
             options.add_argument("--log-level=0")
             
             # Create driver
-            self.driver = uc.Chrome(options=options)
+            try:
+                self.driver = uc.Chrome(options=options)
+            except Exception as e:
+                self.logger.error("Failed to create Chrome driver", error=str(e))
+                # Try with regular selenium Chrome as fallback
+                from selenium import webdriver
+                from selenium.webdriver.chrome.service import Service
+                from selenium.webdriver.chrome.options import Options as ChromeOptions
+                
+                # Convert undetected options to regular Chrome options
+                chrome_options = ChromeOptions()
+                for arg in options.arguments:
+                    chrome_options.add_argument(arg)
+                
+                self.driver = webdriver.Chrome(options=chrome_options)
             
             # Set timeouts
             self.driver.set_page_load_timeout(self.config.timeout)

@@ -47,6 +47,14 @@ class LighthouseCLI:
         self.stop()
         sys.exit(0)
     
+    def _speak(self, text: str) -> None:
+        """Speak text with error handling"""
+        try:
+            self._speak(text)
+        except Exception:
+            # TTS not available, just continue silently
+            pass
+    
     def start(self) -> None:
         """Start the Lighthouse CLI"""
         try:
@@ -77,11 +85,11 @@ class LighthouseCLI:
         
         # Test TTS
         try:
-            tts_manager.speak("Lighthouse is ready. Press spacebar to start listening.")
+            self._speak("Lighthouse is ready. Press spacebar to start listening.")
             self.console.print("[green]✓ TTS initialized[/green]")
         except Exception as e:
-            self.console.print(f"[red]✗ TTS failed: {e}[/red]")
-            raise
+            self.console.print(f"[yellow]⚠ TTS not available: {e}[/yellow]")
+            self.console.print("[yellow]Voice feedback disabled, but speech recognition still works.[/yellow]")
         
         self.console.print("[green]All components initialized successfully![/green]")
     
@@ -148,12 +156,12 @@ class LighthouseCLI:
                 self._process_command(result.text)
             else:
                 self.console.print("[yellow]No speech detected[/yellow]")
-                tts_manager.speak("No speech detected. Please try again.")
+                self._speak("No speech detected. Please try again.")
             
         except Exception as e:
             self.logger.error("Listening failed", error=str(e))
             self.console.print(f"[red]Listening error: {e}[/red]")
-            tts_manager.speak("Sorry, I couldn't hear you. Please try again.")
+            self._speak("Sorry, I couldn't hear you. Please try again.")
         finally:
             self.is_listening = False
     
@@ -172,7 +180,7 @@ class LighthouseCLI:
             
             if intent_result.intent == Intent.UNKNOWN:
                 self.console.print("[red]Unknown command[/red]")
-                tts_manager.speak("I didn't understand that command. Please try again.")
+                self._speak("I didn't understand that command. Please try again.")
                 return
             
             # Execute command
@@ -181,7 +189,7 @@ class LighthouseCLI:
         except Exception as e:
             self.logger.error("Command processing failed", error=str(e))
             self.console.print(f"[red]Error: {e}[/red]")
-            tts_manager.speak("Sorry, there was an error processing your command.")
+            self._speak("Sorry, there was an error processing your command.")
     
     def _execute_intent(self, intent_result) -> None:
         """Execute the classified intent"""
@@ -237,12 +245,12 @@ class LighthouseCLI:
             # Check safety
             if not safety_manager.is_domain_allowed(url):
                 self.console.print(f"[red]Domain not allowed: {url}[/red]")
-                tts_manager.speak(f"Sorry, {url} is not in the allowed domains list.")
+                self._speak(f"Sorry, {url} is not in the allowed domains list.")
                 return
             
             # Navigate
             self.console.print(f"[blue]Navigating to: {url}[/blue]")
-            tts_manager.speak(f"Navigating to {url}")
+            self._speak(f"Navigating to {url}")
             
             success = browser_manager.navigate(url)
             if success:
@@ -250,9 +258,9 @@ class LighthouseCLI:
                 page_info = browser_manager.get_page_info()
                 self._announce_page_info(page_info)
             else:
-                tts_manager.speak("Navigation failed. Please try again.")
+                self._speak("Navigation failed. Please try again.")
         else:
-            tts_manager.speak("I didn't understand the URL. Please specify a website to visit.")
+            self._speak("I didn't understand the URL. Please specify a website to visit.")
     
     def _handle_click(self, intent_result) -> None:
         """Handle click command"""
@@ -261,11 +269,11 @@ class LighthouseCLI:
         # Check safety
         if safety_manager.requires_confirmation(ActionType.CLICK):
             if not Confirm.ask("Confirm click action?"):
-                tts_manager.speak("Click action cancelled.")
+                self._speak("Click action cancelled.")
                 return
         
         self.console.print("[blue]Looking for clickable element...[/blue]")
-        tts_manager.speak("Looking for clickable element")
+        self._speak("Looking for clickable element")
         
         # Find and click element
         elements = browser_manager.browser.list_actionable_elements()
@@ -275,14 +283,14 @@ class LighthouseCLI:
             if element:
                 success = browser_manager.browser.click_element(element)
                 if success:
-                    tts_manager.speak("Element clicked successfully")
+                    self._speak("Element clicked successfully")
                     self._announce_page_changes()
                 else:
-                    tts_manager.speak("Click failed")
+                    self._speak("Click failed")
             else:
-                tts_manager.speak("No clickable elements found")
+                self._speak("No clickable elements found")
         else:
-            tts_manager.speak("No clickable elements found on this page")
+            self._speak("No clickable elements found on this page")
     
     def _handle_type(self, intent_result) -> None:
         """Handle type command"""
@@ -291,38 +299,38 @@ class LighthouseCLI:
         if 'text' in parsed:
             text = parsed['text']
             self.console.print(f"[blue]Typing: {text}[/blue]")
-            tts_manager.speak(f"Typing {text}")
+            self._speak(f"Typing {text}")
             
             # Find input field and type
             element = browser_manager.browser.find_element("input")
             if element:
                 success = browser_manager.browser.type_text(element, text)
                 if success:
-                    tts_manager.speak("Text entered successfully")
+                    self._speak("Text entered successfully")
                 else:
-                    tts_manager.speak("Failed to enter text")
+                    self._speak("Failed to enter text")
             else:
-                tts_manager.speak("No input field found")
+                self._speak("No input field found")
         else:
-            tts_manager.speak("I didn't understand what to type. Please specify the text.")
+            self._speak("I didn't understand what to type. Please specify the text.")
     
     def _handle_submit(self, intent_result) -> None:
         """Handle submit command"""
         # Check safety
         if safety_manager.requires_confirmation(ActionType.SUBMIT):
             if not Confirm.ask("Confirm form submission?"):
-                tts_manager.speak("Form submission cancelled.")
+                self._speak("Form submission cancelled.")
                 return
         
         self.console.print("[blue]Submitting form...[/blue]")
-        tts_manager.speak("Submitting form")
+        self._speak("Submitting form")
         
         success = browser_manager.browser.submit_form()
         if success:
-            tts_manager.speak("Form submitted successfully")
+            self._speak("Form submitted successfully")
             self._announce_page_changes()
         else:
-            tts_manager.speak("Form submission failed")
+            self._speak("Form submission failed")
     
     def _handle_describe(self, intent_result) -> None:
         """Handle describe command"""
@@ -337,18 +345,18 @@ class LighthouseCLI:
         
         elements = browser_manager.browser.list_actionable_elements()
         if elements:
-            tts_manager.speak(f"Found {len(elements)} actionable elements")
+            self._speak(f"Found {len(elements)} actionable elements")
             for i, element in enumerate(elements[:5], 1):
                 description = f"{i}. {element.role}: {element.text or element.aria_label or 'No label'}"
                 self.console.print(f"[green]{description}[/green]")
-                tts_manager.speak(description)
+                self._speak(description)
         else:
-            tts_manager.speak("No actionable elements found on this page")
+            self._speak("No actionable elements found on this page")
     
     def _handle_stop(self, intent_result) -> None:
         """Handle stop command"""
         self.console.print("[yellow]Stopping current action...[/yellow]")
-        tts_manager.speak("Stopping current action")
+        self._speak("Stopping current action")
         self._stop_listening()
     
     def _handle_help(self, intent_result) -> None:
@@ -364,18 +372,18 @@ class LighthouseCLI:
         announcement += f". Found {len(page_info.actionable_elements)} actionable elements."
         
         self.console.print(f"[green]{announcement}[/green]")
-        tts_manager.speak(announcement)
+        self._speak(announcement)
     
     def _announce_page_changes(self) -> None:
         """Announce page changes"""
         changes = browser_manager.browser.detect_page_changes()
         
         if changes['type'] == 'changes_detected':
-            tts_manager.speak("Page has changed")
+            self._speak("Page has changed")
         elif changes['type'] == 'navigation':
-            tts_manager.speak("Navigated to new page")
+            self._speak("Navigated to new page")
         else:
-            tts_manager.speak("No significant changes detected")
+            self._speak("No significant changes detected")
     
     def _show_help(self) -> None:
         """Show help information"""
@@ -392,7 +400,7 @@ class LighthouseCLI:
         help_text.append("\n• 'quit': Exit Lighthouse")
         
         self.console.print(Panel(help_text, title="Help"))
-        tts_manager.speak("Help information displayed. You can say navigate, click, type, submit, describe, list, stop, or help.")
+        self._speak("Help information displayed. You can say navigate, click, type, submit, describe, list, stop, or help.")
     
     def stop(self) -> None:
         """Stop the CLI"""

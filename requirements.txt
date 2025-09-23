@@ -1,0 +1,44 @@
+# LighthouseAI - Voice-driven web navigator for blind and low-vision users
+# Core dependencies with tested working versions
+
+# Browser automation
+selenium>=4.15.0
+undetected-chromedriver>=3.5.0
+
+# Speech processing
+faster-whisper>=0.10.0
+webrtcvad>=2.0.10
+pyttsx3>=2.90
+pyaudio>=0.2.11
+sounddevice>=0.4.6
+
+# Web framework
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+pydantic>=2.11.0
+pydantic-settings>=2.1.0
+
+# HTTP and networking
+httpx>=0.25.0
+requests>=2.32.0
+
+# Data processing
+pyyaml>=6.0.0
+structlog>=23.2.0
+rich>=13.9.0
+
+# Audio processing
+librosa>=0.10.0
+numpy>=1.26.0
+scipy>=1.15.0
+
+# Browser automation extras
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Configuration and environment
+python-dotenv>=1.0.0
+click>=8.1.0
+
+# Additional dependencies for macOS compatibility
+PyObjC>=9.0.0; sys_platform == "darwin"

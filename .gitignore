@@ -222,3 +222,39 @@ videos/
 # Configuration overrides
 config/local.yaml
 config/secrets.yaml
+
+# API keys and secrets
+*.key
+*.pem
+*.p12
+.env.local
+.env.production
+.env.staging
+secrets.json
+credentials.json
+
+# Chrome driver binaries (platform specific)
+chromedriver*
+geckodriver*
+msedgedriver*
+
+# Audio recordings and test files
+recordings/
+*.wav
+*.mp3
+*.flac
+*.m4a
+*.ogg
+
+# Screenshots and recordings from testing
+screenshots/
+recordings/
+videos/
+*.png
+*.jpg
+*.jpeg
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3

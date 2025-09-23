@@ -8,9 +8,10 @@ Lighthouse.ai is a voice-controlled assistant that lets blind and low-vision use
 
 ### Prerequisites
 
-- Python 3.9+
+- Python 3.12+ (recommended) or Python 3.9+
 - Chrome/Chromium browser
 - macOS, Linux, or Windows
+- For macOS: Xcode Command Line Tools (`xcode-select --install`)
 
 ### Installation
 
@@ -19,32 +20,60 @@ Lighthouse.ai is a voice-controlled assistant that lets blind and low-vision use
 git clone https://github.com/lighthouse-ai/lighthouse.git
 cd lighthouse
 
-# Quick setup (recommended)
-make quickstart
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Or manual setup
-make install
-make download-models
-make check-chrome
+# Install system dependencies (macOS)
+brew install portaudio  # Required for PyAudio
+
+# Install Python dependencies
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+
+# Copy environment configuration
+cp env.example .env
 ```
 
 ### Running Lighthouse.ai
 
 #### CLI Mode (Voice Interface)
 ```bash
-make run-cli
-# or
+# Activate virtual environment
+source venv/bin/activate
+
+# Run CLI with voice commands
 python cli.py
 ```
 
 #### API Mode (Testing/Development)
 ```bash
-make run-api
-# or
-uvicorn main:app --reload
+# Activate virtual environment
+source venv/bin/activate
+
+# Run API server
+python main.py
+# or with custom port
+API_PORT=8001 python main.py
 ```
 
-Visit `http://localhost:8000/docs` for API documentation.
+Visit `http://localhost:8000/docs` (or your custom port) for interactive API documentation.
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**TTS Engine Not Working (macOS)**
+- Install PyObjC: `pip install PyObjC>=9.0.0`
+- The app will continue to work without voice feedback
+
+**Port Already in Use**
+- Kill existing process: `lsof -ti:8000 | xargs kill -9`
+- Use different port: `API_PORT=8001 python main.py`
+
+**Chrome Driver Issues**
+- The app automatically handles Chrome driver setup
+- If issues persist, manually install Chrome/Chromium browser
 
 ## 🎯 Core Features
 

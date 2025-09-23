@@ -9,6 +9,10 @@ from dataclasses import dataclass
 import numpy as np
 import sounddevice as sd
 import pyttsx3
+try:
+    import objc
+except ImportError:
+    objc = None
 
 from lighthouse.utils.logging import get_logger, LoggerMixin
 from lighthouse.config.settings import get_settings
@@ -140,12 +144,20 @@ class PyTTSX3Service(LoggerMixin):
             
         except Exception as e:
             self.logger.error("Failed to load TTS engine", error=str(e))
-            raise
+            # Don't raise - allow the service to continue without TTS
+            self.tts_engine = None
     
     def synthesize(self, text: str, speaker_id: Optional[int] = None) -> SpeechResult:
         """Synthesize text to speech"""
         if not self.tts_engine:
-            raise RuntimeError("TTS engine not loaded")
+            return SpeechResult(
+                audio_data=np.array([]),
+                sample_rate=22050,
+                duration=0.0,
+                text=text,
+                success=False,
+                error="TTS engine not available"
+            )
         
         start_time = time.time()
         
